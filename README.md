@@ -1,6 +1,6 @@
-# 📍 Google Maps Scraper — Web UI
+# GoDaper — Web UI
 
-A free Google Maps scraper with a web interface. Search for any business type across UK postcodes — no API key required.
+A free Google Maps Data Finder. Search for any business type across UK postcodes.
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -21,7 +21,7 @@ A free Google Maps scraper with a web interface. Search for any business type ac
 
 ```bash
 # 1. Clone or copy the project
-cd maps-scraper
+cd GoDaper
 
 # 2. Install dependencies
 pip install -r requirements.txt
@@ -44,17 +44,6 @@ Then open **http://localhost:5000** in your browser.
 5. **Click "Start Scraping"** — watch results stream in live
 6. **Download Excel** — click the download button when complete
 
-## Project Structure
-
-```
-maps-scraper/
-├── app.py              # Flask web server + API endpoints
-├── scraper.py          # Playwright scraping engine + Excel generator
-├── requirements.txt    # Python dependencies
-├── templates/
-│   └── index.html      # Web UI (single-page app)
-└── static/             # Generated Excel files stored here
-```
 
 ## Notes
 
@@ -63,3 +52,9 @@ maps-scraper/
 - **Full L1–L37 scan** — A complete Liverpool scan takes roughly 20-40 minutes
 - **Be respectful** — The scraper includes delays to avoid overwhelming Google
 - **Google may block** — If you scrape too aggressively, Google may show CAPTCHAs
+
+## ⚠️ Disclaimer
+
+This project is for **educational and personal use only**. Scraping Google Maps
+may violate Google's [Terms of Service](https://policies.google.com/terms).
+The author is not responsible for any misuse. Use at your own risk.

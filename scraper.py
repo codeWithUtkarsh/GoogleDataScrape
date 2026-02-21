@@ -1,5 +1,4 @@
 """
-Scraper module — Google Maps browser automation + Excel export.
 Supports loading existing Excel data and merging/deduplicating.
 """
 

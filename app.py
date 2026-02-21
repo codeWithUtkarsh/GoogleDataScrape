@@ -1,5 +1,5 @@
 """
-Google Maps Scraper — Web UI
+GoDapper — Web UI
 Flask application with file upload, real-time progress via SSE.
 """
 
