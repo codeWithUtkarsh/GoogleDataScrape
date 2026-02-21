@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoMapGallant</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e17;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --surface3: #243049;
+            --border: #2a3650;
+            --border-light: #3a4a6b;
+            --text: #e2e8f0;
+            --text-dim: #8899b4;
+            --text-muted: #5a6b85;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.25);
+            --accent-hover: #60a5fa;
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --amber: #f59e0b;
+            --amber-dim: rgba(245, 158, 11, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.12);
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; top: -40%; left: -20%;
+            width: 80vw; height: 80vw;
+            background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed; bottom: -30%; right: -10%;
+            width: 60vw; height: 60vw;
+            background: radial-gradient(circle, rgba(34,197,94,0.04) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+
+        .app { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 48px; }
+        .header h1 {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, #e2e8f0 0%, #3b82f6 50%, #22c55e 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p { color: var(--text-dim); font-size: 0.95rem; }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .card-title {
+            font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1.2px; color: var(--accent);
+            margin-bottom: 20px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card-title .step {
+            background: var(--accent); color: #fff;
+            font-size: 0.7rem; font-weight: 700;
+            width: 22px; height: 22px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .card-title .optional {
+            background: var(--surface3); color: var(--text-muted);
+            font-size: 0.65rem; font-weight: 500;
+            padding: 2px 8px; border-radius: 10px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-left: auto;
+        }
+
+        /* Forms */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.82rem; font-weight: 500; color: var(--text-dim); }
+        .form-group input {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 12px 14px;
+            color: var(--text); font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem; transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+        }
+        .form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .form-group input::placeholder { color: var(--text-muted); }
+
+        /* Buttons */
+        .btn {
+            font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9rem;
+            border: none; border-radius: var(--radius-sm);
+            padding: 12px 24px; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--surface3); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover:not(:disabled) { background: var(--border); }
+        .btn-success { background: var(--green); color: #fff; }
+        .btn-success:hover:not(:disabled) { background: #16a34a; }
+        .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); padding: 8px 16px; font-size: 0.8rem; }
+        .btn-danger:hover { background: var(--red-dim); }
+        .btn-row { display: flex; gap: 10px; margin-top: 8px; }
+
+        /* ── Upload Zone ── */
+        .upload-zone {
+            border: 2px dashed var(--border-light);
+            border-radius: var(--radius);
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.04);
+        }
+        .upload-zone.drag-over {
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .upload-zone .icon { font-size: 2rem; margin-bottom: 10px; }
+        .upload-zone .main-text { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+        .upload-zone .sub-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+        .upload-zone .browse-link { color: var(--accent); text-decoration: underline; cursor: pointer; }
+        .upload-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer;
+        }
+
+        /* Upload Summary */
+        .upload-summary {
+            display: none;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin-top: 16px;
+        }
+        .upload-summary.visible { display: block; }
+        .upload-summary-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .upload-summary-header .file-info {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .upload-summary-header .file-icon {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: var(--green-dim); color: var(--green);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        .upload-summary-header .file-name { font-weight: 600; font-size: 0.9rem; }
+        .upload-summary-header .file-meta { font-size: 0.75rem; color: var(--text-muted); }
+
+        .upload-stats {
+            display: flex; gap: 16px; flex-wrap: wrap;
+        }
+        .upload-stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px; text-align: center;
+        }
+        .upload-stat .val { font-weight: 700; font-size: 1.1rem; color: var(--amber); }
+        .upload-stat .lbl { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+
+        .upload-sample {
+            margin-top: 12px;
+            font-size: 0.78rem; color: var(--text-dim);
+        }
+        .upload-sample strong { color: var(--text); }
+
+        /* Postcodes */
+        .postcodes-section { display: none; }
+        .postcodes-section.visible { display: block; }
+        .postcodes-toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+        }
+        .postcodes-toolbar .count { font-size: 0.82rem; color: var(--text-dim); }
+        .postcodes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px;
+        }
+        .postcodes-grid::-webkit-scrollbar { width: 5px; }
+        .postcodes-grid::-webkit-scrollbar-track { background: transparent; }
+        .postcodes-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .pc-item {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 10px 12px;
+            cursor: pointer; transition: all 0.15s; text-align: center; user-select: none;
+        }
+        .pc-item:hover { border-color: var(--accent); background: var(--surface3); }
+        .pc-item.selected {
+            border-color: var(--accent); background: var(--accent-glow);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+        .pc-item .outcode { font-weight: 700; font-size: 1rem; }
+        .pc-item .district {
+            font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* Progress */
+        .progress-section { display: none; }
+        .progress-section.visible { display: block; }
+        .progress-bar-wrap {
+            background: var(--surface2); border-radius: 20px;
+            height: 8px; overflow: hidden; margin-bottom: 16px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+            border-radius: 20px; width: 0%; transition: width 0.4s ease;
+        }
+        .progress-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem; color: var(--text-dim); margin-bottom: 10px;
+        }
+        .log-container {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 16px;
+            max-height: 240px; overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem; line-height: 1.7; color: var(--text-dim);
+        }
+        .log-container::-webkit-scrollbar { width: 5px; }
+        .log-container::-webkit-scrollbar-track { background: transparent; }
+        .log-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .log-entry { padding: 1px 0; }
+        .log-entry.store { color: var(--green); }
+        .log-entry.error { color: var(--red); }
+        .log-entry.info { color: var(--amber); }
+        .log-entry .ts { color: var(--text-muted); }
+
+        /* Results */
+        .results-section { display: none; }
+        .results-section.visible { display: block; }
+        .results-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+        }
+        .results-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat {
+            text-align: center; background: var(--surface2);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 12px 20px;
+        }
+        .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+        .stat-value.green { color: var(--green); }
+        .stat-value.amber { color: var(--amber); }
+        .stat-label {
+            font-size: 0.72rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;
+        }
+
+        .table-wrap {
+            overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        thead th {
+            background: var(--surface3); color: var(--text-dim);
+            font-weight: 600; font-size: 0.72rem;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 12px 14px; text-align: left;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 2; white-space: nowrap;
+        }
+        tbody td {
+            padding: 10px 14px; border-bottom: 1px solid var(--border);
+            vertical-align: top; max-width: 200px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        tbody tr:hover { background: var(--surface2); }
+        tbody tr:nth-child(even) { background: rgba(255,255,255,0.015); }
+        td.phone { color: var(--green); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+        td.na { color: var(--text-muted); }
+        td.postcode-cell { font-weight: 700; color: var(--accent); background: rgba(59,130,246,0.06); }
+
+        /* Source badges */
+        .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .badge-new { background: var(--green-dim); color: var(--green); }
+        .badge-existing { background: var(--amber-dim); color: var(--amber); }
+
+        td a { color: var(--accent-hover); text-decoration: none; }
+        td a:hover { text-decoration: underline; }
+
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid var(--border); border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.7s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-overlay {
+            display: none; align-items: center; justify-content: center;
+            padding: 40px; color: var(--text-dim); gap: 12px;
+        }
+        .loading-overlay.visible { display: flex; }
+
+        /* ── Cleanup Bar ── */
+        .cleanup-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 20px;
+            margin-bottom: 24px;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .cleanup-info {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.82rem; color: var(--text-dim);
+        }
+        .cleanup-icon { font-size: 1.1rem; }
+        .cleanup-info .file-count { font-weight: 700; color: var(--text); }
+        .cleanup-info .file-size { color: var(--text-muted); }
+
+        .btn-cleanup {
+            font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem;
+            background: transparent; color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 8px 16px; cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-cleanup:hover { background: var(--red-dim); border-color: var(--red); }
+        .btn-cleanup:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-cleanup.clean {
+            color: var(--green); border-color: rgba(34, 197, 94, 0.3);
+        }
+        .btn-cleanup.clean:hover { background: var(--green-dim); }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-title {
+            font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;
+        }
+        .modal-body {
+            font-size: 0.88rem; color: var(--text-dim); line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .modal-stats {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem; color: var(--text-dim);
+        }
+        .modal-stats .stat-line {
+            display: flex; justify-content: space-between;
+            padding: 3px 0;
+        }
+        .modal-stats .stat-line .val { color: var(--text); font-weight: 600; }
+        .modal-actions {
+            display: flex; gap: 10px; justify-content: flex-end;
+        }
+        .btn-danger-solid {
+            font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.88rem;
+            background: var(--red); color: #fff;
+            border: none; border-radius: var(--radius-sm);
+            padding: 10px 20px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-danger-solid:hover { background: #dc2626; }
+
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.5rem; }
+            .results-stats { flex-direction: column; }
+            .postcodes-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <!-- Header -->
+    <div class="header">
+        <h1>GoMapGallant</h1>
+        <p>Search any business across UK postcodes</p>
+    </div>
+
+    <!-- Cleanup Bar -->
+    <div class="cleanup-bar" id="cleanupBar">
+        <div class="cleanup-info">
+            <span class="cleanup-icon">🗂</span>
+            <span id="cleanupText">Loading file info...</span>
+        </div>
+        <button class="btn btn-cleanup" id="btnCleanup" onclick="showCleanupConfirm()">
+            🧹 Clean Up Files
+        </button>
+    </div>
+
+    <!-- Cleanup Confirm Modal -->
+    <div class="modal-overlay" id="cleanupModal">
+        <div class="modal-box">
+            <div class="modal-title">🧹 Clean Up Files</div>
+            <div class="modal-body" id="cleanupModalBody">
+                This will permanently delete all generated Excel files and uploaded spreadsheets from the server.
+            </div>
+            <div class="modal-stats" id="cleanupModalStats"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideCleanupConfirm()">Cancel</button>
+                <button class="btn btn-danger-solid" onclick="doCleanup()">🗑 Delete All Files</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 1: Search -->
+    <div class="card">
+        <div class="card-title"><span class="step">1</span> Search Query & Location</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>What are you looking for?</label>
+                <input type="text" id="query" placeholder='e.g. "indian grocery store"' value="indian grocery store">
+            </div>
+            <div class="form-group">
+                <label>City / Area (UK)</label>
+                <input type="text" id="location" placeholder='e.g. "Liverpool"' value="">
+            </div>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btnFetchPostcodes" onclick="fetchPostcodes()">
+                🔍 Find Postcodes
+            </button>
+        </div>
+        <div class="loading-overlay" id="postcodeLoading">
+            <div class="spinner"></div>
+            <span>Fetching postcodes...</span>
+        </div>
+    </div>
+
+    <!-- Upload Existing File (optional) -->
+    <div class="card">
+        <div class="card-title">
+            <span class="step">📎</span> Upload Existing Sheet
+            <span class="optional">Optional</span>
+        </div>
+        <p style="font-size: 0.84rem; color: var(--text-dim); margin-bottom: 16px;">
+            Already have a spreadsheet with shop data? Upload it here and the scraper will
+            <strong style="color: var(--text);">skip duplicates</strong> and only
+            <strong style="color: var(--green);">append new stores</strong> to your file.
+        </p>
+
+        <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileUpload(this)">
+            <div class="icon">📁</div>
+            <div class="main-text">Drop your <code>.xlsx</code> file here or <span class="browse-link">browse</span></div>
+            <div class="sub-text">The scraper will auto-detect columns like Name, Address, Phone, etc.</div>
+        </div>
+
+        <div class="upload-summary" id="uploadSummary">
+            <div class="upload-summary-header">
+                <div class="file-info">
+                    <div class="file-icon">📊</div>
+                    <div>
+                        <div class="file-name" id="uploadFileName">—</div>
+                        <div class="file-meta" id="uploadFileMeta">—</div>
+                    </div>
+                </div>
+                <button class="btn btn-danger" onclick="removeUpload()">✕ Remove</button>
+            </div>
+            <div class="upload-stats">
+                <div class="upload-stat">
+                    <div class="val" id="uploadStoreCount">0</div>
+                    <div class="lbl">Stores Loaded</div>
+                </div>
+                <div class="upload-stat">
+                    <div class="val" id="uploadPhoneCount">0</div>
+                    <div class="lbl">With Phone</div>
+                </div>
+                <div class="upload-stat">
+                    <div class="val" id="uploadPostcodeCount">0</div>
+                    <div class="lbl">Postcodes</div>
+                </div>
+            </div>
+            <div class="upload-sample" id="uploadSample"></div>
+        </div>
+    </div>
+
+    <!-- Step 2: Postcodes -->
+    <div class="card postcodes-section" id="postcodesSection">
+        <div class="card-title"><span class="step">2</span> Select Postcodes</div>
+        <div class="postcodes-toolbar">
+            <div>
+                <button class="btn btn-secondary" onclick="selectAll()">Select All</button>
+                <button class="btn btn-secondary" onclick="deselectAll()">Clear</button>
+            </div>
+            <div class="count" id="selectedCount">0 of 0 selected</div>
+        </div>
+        <div class="postcodes-grid" id="postcodesGrid"></div>
+        <div class="btn-row" style="margin-top: 18px;">
+            <button class="btn btn-success" id="btnStartScrape" onclick="startScrape()">
+                🚀 Start Scraping
+            </button>
+        </div>
+    </div>
+
+    <!-- Step 3: Progress -->
+    <div class="card progress-section" id="progressSection">
+        <div class="card-title"><span class="step">3</span> Scraping Progress</div>
+        <div class="progress-status" id="progressStatus">Initializing...</div>
+        <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="log-container" id="logContainer"></div>
+    </div>
+
+    <!-- Step 4: Results -->
+    <div class="card results-section" id="resultsSection">
+        <div class="card-title"><span class="step">✓</span> Results</div>
+        <div class="results-header">
+            <div class="results-stats">
+                <div class="stat">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Total Stores</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value green" id="statNew">0</div>
+                    <div class="stat-label">New Found</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value amber" id="statExisting">0</div>
+                    <div class="stat-label">From Upload</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value green" id="statPhone">0</div>
+                    <div class="stat-label">With Phone</div>
+                </div>
+            </div>
+            <button class="btn btn-success" id="btnDownload" onclick="downloadFile()">
+                📥 Download Excel
+            </button>
+        </div>
+        <div class="table-wrap" style="max-height: 500px; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Source</th>
+                        <th>Postcode</th>
+                        <th>Store Name</th>
+                        <th>Address</th>
+                        <th>Phone</th>
+                        <th>Rating</th>
+                        <th>Reviews</th>
+                        <th>Category</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── State ──
+    let postcodes = [];
+    let selectedPostcodes = new Set();
+    let downloadFilename = '';
+    let storeCount = 0;
+    let phoneCount = 0;
+    let uploadSessionId = '';
+
+    // ══════════════════════════════════════
+    // FILE UPLOAD
+    // ══════════════════════════════════════
+
+    // Drag & drop
+    const uploadZone = document.getElementById('uploadZone');
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+    uploadZone.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadZone.classList.remove('drag-over');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) doUpload(files[0]);
+    });
+
+    function handleFileUpload(input) {
+        if (input.files.length > 0) doUpload(input.files[0]);
+    }
+
+    async function doUpload(file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['xlsx', 'xls'].includes(ext)) {
+            alert('Please upload an .xlsx or .xls file');
+            return;
+        }
+
+        uploadZone.style.display = 'none';
+        const summary = document.getElementById('uploadSummary');
+
+        // Show loading state
+        document.getElementById('uploadFileName').textContent = file.name;
+        document.getElementById('uploadFileMeta').textContent = 'Parsing file...';
+        summary.classList.add('visible');
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const resp = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await resp.json();
+
+            if (data.error) {
+                alert('Upload error: ' + data.error);
+                removeUploadUI();
+                return;
+            }
+
+            uploadSessionId = data.session_id;
+
+            document.getElementById('uploadFileName').textContent = data.filename;
+            document.getElementById('uploadFileMeta').textContent =
+                `Parsed successfully — ${data.total_stores} stores detected`;
+            document.getElementById('uploadStoreCount').textContent = data.total_stores;
+            document.getElementById('uploadPhoneCount').textContent = data.with_phone;
+            document.getElementById('uploadPostcodeCount').textContent = data.postcodes_found.length;
+            refreshCleanupInfo();
+
+            // Show sample
+            if (data.sample && data.sample.length > 0) {
+                const sampleHtml = data.sample.map(s =>
+                    `<strong>${escapeHtml(s.name)}</strong> — ${escapeHtml(s.address)}`
+                ).join('<br>');
+                document.getElementById('uploadSample').innerHTML =
+                    `<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
+                        <div style="font-weight:600; margin-bottom:4px; color:var(--text);">Preview (first ${data.sample.length}):</div>
+                        ${sampleHtml}
+                    </div>`;
+            }
+
+        } catch (err) {
+            alert('Upload failed: ' + err.message);
+            removeUploadUI();
+        }
+    }
+
+    async function removeUpload() {
+        if (uploadSessionId) {
+            try {
+                await fetch('/api/upload/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: uploadSessionId }),
+                });
+            } catch (e) {}
+        }
+        removeUploadUI();
+    }
+
+    function removeUploadUI() {
+        uploadSessionId = '';
+        document.getElementById('uploadSummary').classList.remove('visible');
+        uploadZone.style.display = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('uploadSample').innerHTML = '';
+        refreshCleanupInfo();
+    }
+
+    // ══════════════════════════════════════
+    // POSTCODES
+    // ══════════════════════════════════════
+
+    async function fetchPostcodes() {
+        const query = document.getElementById('query').value.trim();
+        const location = document.getElementById('location').value.trim();
+        if (!query) return alert('Please enter a search query');
+        if (!location) return alert('Please enter a city or area');
+
+        const btn = document.getElementById('btnFetchPostcodes');
+        const loading = document.getElementById('postcodeLoading');
+        btn.disabled = true;
+        loading.classList.add('visible');
+
+        try {
+            const resp = await fetch('/api/postcodes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ location })
+            });
+            const data = await resp.json();
+            if (data.error) { alert(data.error); return; }
+
+            postcodes = data.postcodes || [];
+            if (postcodes.length === 0) {
+                alert('No postcodes found. Try a different city name.');
+                return;
+            }
+
+            renderPostcodes();
+            document.getElementById('postcodesSection').classList.add('visible');
+            document.getElementById('postcodesSection').scrollIntoView({ behavior: 'smooth' });
+        } catch (err) {
+            alert('Error: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            loading.classList.remove('visible');
+        }
+    }
+
+    function renderPostcodes() {
+        const grid = document.getElementById('postcodesGrid');
+        grid.innerHTML = '';
+        selectedPostcodes.clear();
+        postcodes.forEach(pc => {
+            const div = document.createElement('div');
+            div.className = 'pc-item';
+            div.dataset.outcode = pc.outcode;
+            div.innerHTML = `<div class="outcode">${pc.outcode}</div>
+                <div class="district">${pc.admin_district || '—'}</div>`;
+            div.addEventListener('click', () => togglePostcode(div, pc.outcode));
+            grid.appendChild(div);
+        });
+        updateCount();
+    }
+
+    function togglePostcode(el, outcode) {
+        if (selectedPostcodes.has(outcode)) {
+            selectedPostcodes.delete(outcode);
+            el.classList.remove('selected');
+        } else {
+            selectedPostcodes.add(outcode);
+            el.classList.add('selected');
+        }
+        updateCount();
+    }
+
+    function selectAll() {
+        document.querySelectorAll('.pc-item').forEach(el => {
+            el.classList.add('selected');
+            selectedPostcodes.add(el.dataset.outcode);
+        });
+        updateCount();
+    }
+
+    function deselectAll() {
+        document.querySelectorAll('.pc-item').forEach(el => el.classList.remove('selected'));
+        selectedPostcodes.clear();
+        updateCount();
+    }
+
+    function updateCount() {
+        document.getElementById('selectedCount').textContent =
+            `${selectedPostcodes.size} of ${postcodes.length} selected`;
+    }
+
+    // ══════════════════════════════════════
+    // SCRAPING
+    // ══════════════════════════════════════
+
+    async function startScrape() {
+        if (selectedPostcodes.size === 0) return alert('Select at least one postcode');
+
+        const query = document.getElementById('query').value.trim();
+        const location = document.getElementById('location').value.trim();
+
+        document.getElementById('btnStartScrape').disabled = true;
+        document.getElementById('progressSection').classList.add('visible');
+        document.getElementById('resultsSection').classList.remove('visible');
+        document.getElementById('logContainer').innerHTML = '';
+        document.getElementById('resultsBody').innerHTML = '';
+        storeCount = 0;
+        phoneCount = 0;
+
+        document.getElementById('progressSection').scrollIntoView({ behavior: 'smooth' });
+
+        try {
+            const body = {
+                query, location,
+                postcodes: [...selectedPostcodes].sort(),
+            };
+            if (uploadSessionId) {
+                body.upload_session_id = uploadSessionId;
+            }
+
+            const resp = await fetch('/api/scrape', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const data = await resp.json();
+
+            if (data.error) {
+                alert(data.error);
+                document.getElementById('btnStartScrape').disabled = false;
+                return;
+            }
+
+            listenProgress(data.job_id);
+
+        } catch (err) {
+            alert('Error: ' + err.message);
+            document.getElementById('btnStartScrape').disabled = false;
+        }
+    }
+
+    function listenProgress(jobId) {
+        const evtSource = new EventSource(`/api/progress/${jobId}`);
+
+        evtSource.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+
+            if (msg.type === 'progress') {
+                const isInfo = msg.message.includes('existing stores') || msg.message.includes('already in sheet');
+                addLog(msg.message, isInfo ? 'info' : '');
+
+                const match = msg.message.match(/\[(\d+)\/(\d+)\]/);
+                if (match) {
+                    const current = parseInt(match[1]);
+                    const total = parseInt(match[2]);
+                    const pct = Math.round((current / total) * 100);
+                    document.getElementById('progressBar').style.width = pct + '%';
+                    document.getElementById('progressStatus').textContent =
+                        `Postcode ${current}/${total} — ${pct}% complete`;
+                }
+            }
+            else if (msg.type === 'store') {
+                const store = msg.data;
+                storeCount++;
+                if (store.phone && store.phone !== 'N/A') phoneCount++;
+                addStoreToTable(store, 'new');
+                addLog(`  ✓ ${store.name}  |  📞 ${store.phone}`, 'store');
+            }
+            else if (msg.type === 'complete') {
+                evtSource.close();
+                downloadFilename = msg.file;
+
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('progressStatus').textContent = '✅ Scraping complete!';
+
+                const existingCount = msg.existing_stores || 0;
+                const newCount = msg.new_stores || 0;
+
+                addLog('', '');
+                if (existingCount > 0) {
+                    addLog(`📊 Existing stores from upload: ${existingCount}`, 'info');
+                }
+                addLog(`✅ New stores scraped: ${newCount}`, 'store');
+                addLog(`📦 Total in output file: ${msg.total_stores}`, 'store');
+
+                document.getElementById('statTotal').textContent = msg.total_stores;
+                document.getElementById('statNew').textContent = newCount;
+                document.getElementById('statExisting').textContent = existingCount;
+                document.getElementById('statPhone').textContent = msg.total_with_phone;
+                document.getElementById('resultsSection').classList.add('visible');
+                document.getElementById('btnStartScrape').disabled = false;
+
+                document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+                refreshCleanupInfo();
+            }
+            else if (msg.type === 'error') {
+                evtSource.close();
+                addLog(`❌ Error: ${msg.message}`, 'error');
+                document.getElementById('progressStatus').textContent = '❌ Error occurred';
+                document.getElementById('btnStartScrape').disabled = false;
+            }
+        };
+
+        evtSource.onerror = () => {
+            evtSource.close();
+            document.getElementById('btnStartScrape').disabled = false;
+        };
+    }
+
+    function addLog(message, type = '') {
+        const container = document.getElementById('logContainer');
+        const div = document.createElement('div');
+        div.className = `log-entry ${type}`;
+        const now = new Date().toLocaleTimeString('en-GB', { hour12: false });
+        div.innerHTML = `<span class="ts">[${now}]</span> ${escapeHtml(message)}`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function addStoreToTable(store, source) {
+        const tbody = document.getElementById('resultsBody');
+        const row = document.createElement('tr');
+        const phoneClass = store.phone && store.phone !== 'N/A' ? 'phone' : 'na';
+        const ratingDisplay = store.rating && store.rating !== 'N/A' ? `⭐ ${store.rating}` : '—';
+        const badge = source === 'new'
+            ? '<span class="badge badge-new">★ New</span>'
+            : '<span class="badge badge-existing">Existing</span>';
+
+        row.innerHTML = `
+            <td>${tbody.children.length + 1}</td>
+            <td>${badge}</td>
+            <td class="postcode-cell">${escapeHtml(store.postcode || '—')}</td>
+            <td><strong>${escapeHtml(store.name)}</strong></td>
+            <td>${escapeHtml(store.address)}</td>
+            <td class="${phoneClass}">${escapeHtml(store.phone)}</td>
+            <td>${ratingDisplay}</td>
+            <td>${store.total_reviews || 0}</td>
+            <td>${escapeHtml(store.category)}</td>
+        `;
+        tbody.appendChild(row);
+    }
+
+    function downloadFile() {
+        if (downloadFilename) window.location.href = `/api/download/${downloadFilename}`;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '—';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    document.getElementById('location').addEventListener('keydown', e => { if (e.key === 'Enter') fetchPostcodes(); });
+    document.getElementById('query').addEventListener('keydown', e => { if (e.key === 'Enter') fetchPostcodes(); });
+
+    // ══════════════════════════════════════
+    // CLEANUP
+    // ══════════════════════════════════════
+
+    async function refreshCleanupInfo() {
+        try {
+            const resp = await fetch('/api/cleanup/info');
+            const data = await resp.json();
+            const el = document.getElementById('cleanupText');
+            const btn = document.getElementById('btnCleanup');
+
+            if (data.total_files === 0) {
+                el.innerHTML = 'No cached files on server — <span style="color:var(--green)">all clean</span>';
+                btn.textContent = '✓ All Clean';
+                btn.classList.add('clean');
+                btn.disabled = true;
+            } else {
+                const sizeStr = data.total_size_mb >= 1
+                    ? `${data.total_size_mb} MB`
+                    : `${Math.round(data.total_size_bytes / 1024)} KB`;
+                el.innerHTML = `<span class="file-count">${data.total_files} file${data.total_files > 1 ? 's' : ''}</span> cached on server <span class="file-size">(${sizeStr})</span>`;
+                btn.innerHTML = '🧹 Clean Up Files';
+                btn.classList.remove('clean');
+                btn.disabled = false;
+            }
+        } catch (e) {
+            document.getElementById('cleanupText').textContent = 'Could not fetch file info';
+        }
+    }
+
+    async function showCleanupConfirm() {
+        const modal = document.getElementById('cleanupModal');
+        const statsEl = document.getElementById('cleanupModalStats');
+
+        try {
+            const resp = await fetch('/api/cleanup/info');
+            const data = await resp.json();
+
+            if (data.total_files === 0) {
+                alert('No files to clean up!');
+                return;
+            }
+
+            const sizeStr = data.total_size_mb >= 1
+                ? `${data.total_size_mb} MB`
+                : `${Math.round(data.total_size_bytes / 1024)} KB`;
+
+            statsEl.innerHTML = `
+                <div class="stat-line"><span>Total files</span><span class="val">${data.total_files}</span></div>
+                <div class="stat-line"><span>Total size</span><span class="val">${sizeStr}</span></div>
+                <div class="stat-line" style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">
+                    <span>Includes: output .xlsx files + uploaded sheets</span>
+                </div>
+            `;
+        } catch (e) {
+            statsEl.innerHTML = '<div style="color:var(--red)">Could not fetch file details</div>';
+        }
+
+        modal.classList.add('visible');
+    }
+
+    function hideCleanupConfirm() {
+        document.getElementById('cleanupModal').classList.remove('visible');
+    }
+
+    async function doCleanup() {
+        hideCleanupConfirm();
+
+        const btn = document.getElementById('btnCleanup');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Cleaning...';
+
+        try {
+            const resp = await fetch('/api/cleanup', { method: 'POST' });
+            const data = await resp.json();
+
+            if (data.ok) {
+                // Also reset upload UI if active
+                if (uploadSessionId) removeUploadUI();
+
+                // Flash success
+                btn.innerHTML = '✅ Cleaned!';
+                btn.classList.add('clean');
+                setTimeout(() => refreshCleanupInfo(), 1500);
+            }
+        } catch (e) {
+            alert('Cleanup failed: ' + e.message);
+            btn.disabled = false;
+            btn.innerHTML = '🧹 Clean Up Files';
+        }
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('cleanupModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) hideCleanupConfirm();
+    });
+
+    // Load cleanup info on page load
+    refreshCleanupInfo();
+</script>
+</body>
+</html>
