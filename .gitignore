@@ -1,0 +1,13 @@
+# IDE
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# App generated files
+static/*.xlsx
+uploads/*.xlsx
+*.zip
