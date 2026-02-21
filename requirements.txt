@@ -2,4 +2,4 @@ flask
 playwright
 openpyxl
 requests
-
+gunicorn

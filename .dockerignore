@@ -1,0 +1,7 @@
+__pycache__
+*.pyc
+.git
+.env
+static/*.xlsx
+uploads/*.xlsx
+*.zip

@@ -6,25 +6,3 @@ dockerfilePath = "Dockerfile"
 healthcheckPath = "/"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-```
-
-**New file: `.dockerignore`**
-```
-__pycache__
-*.pyc
-.git
-.env
-static/*.xlsx
-uploads/*.xlsx
-*.zip
-```
-
----
-
-**Edit 1: `requirements.txt`** — add `gunicorn` at the end:
-```
-flask
-playwright
-openpyxl
-requests
-gunicorn
